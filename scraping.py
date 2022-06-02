@@ -6,12 +6,34 @@ from bs4 import BeautifulSoup as soup
 from webdriver_manager.chrome import ChromeDriverManager
 
 import pandas as pd
+import datetime as dt
 
-# set up browser
+def scrape_all():
 
-executable_path = {'executable_path': ChromeDriverManager().install()}
+    # Initiate headless driver for deployment
 
-browser = Browser('chrome', **executable_path, headless = False)
+    executable_path = {'executable_path': ChromeDriverManager().install()}
+
+    browser = Browser('chrome', **executable_path, headless = True)
+
+
+    news_title, news_paragraph = mars_news(browser)
+
+    # Run all scraping functions and store results in a dictionary
+
+    data = {
+        "news_title": news_title,
+        "news_paragraph": news_paragraph,
+        "featured_image": featured_image(browser),
+        "facts": mars_facts(),
+        "last_modified": dt.datetime.now()
+    }
+
+    # Stop webdriver and return data
+
+    browser.quit()
+
+    return data
 
 def mars_news(browser):
 
@@ -112,7 +134,7 @@ def mars_facts():
     except BaseException:
 
         return None
-        
+
 
     df.columns = ['description', 'Mars', 'Earth']
 
@@ -122,11 +144,11 @@ def mars_facts():
 
     return df.to_html()
 
-#Quit session
+if __name__ == "__main__":
 
-browser.quit()
+    # If running as script, print scraped data
 
-
+    print(scrape_all())
 
 
 
