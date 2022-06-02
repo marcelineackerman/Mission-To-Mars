@@ -71,7 +71,9 @@ img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
 
 img_url = f'https://spaceimages-mars.com/{img_url_rel}'
 
-# parse mars facts with pandas
+### Mars Facts
+
+# Parse facts table with Pandas
 
 df = pd.read_html('https://galaxyfacts-mars.com')[0]
 
