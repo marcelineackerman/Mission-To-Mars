@@ -13,77 +13,114 @@ executable_path = {'executable_path': ChromeDriverManager().install()}
 
 browser = Browser('chrome', **executable_path, headless = False)
 
-# Visit the mars nasa news site
+def mars_news(browser):
 
-url = 'https://redplanetscience.com'
+    # Scrape Mars News
 
-browser.visit(url)
+    # Visit the mars nasa news site
 
-# Optional delay for loading the page
+    url = 'https://redplanetscience.com'
 
-browser.is_element_present_by_css('div.list_text', wait_time = 1)
+    browser.visit(url)
 
-# Set up html parser
 
-html = browser.html
+    # Optional delay for loading the page
 
-news_soup = soup(html, 'html.parser')
+    browser.is_element_present_by_css('div.list_text', wait_time = 1)
 
-slide_elem = news_soup.select_one('div.list_text')
 
-# begin scraping
+    # Set up html parser
 
-slide_elem.find('div', class_ = 'content_title')
+    html = browser.html
 
-# Use the parent element to find the first `a` tag and save it as `news_title`
+    news_soup = soup(html, 'html.parser')
 
-news_title = slide_elem.find('div', class_='content_title').get_text()
 
-# Use the parent element to find the paragraph text
+    # Add try/except for error handling
 
-news_p = slide_elem.find('div', class_='article_teaser_body').get_text()
+    try:
+
+        slide_elem = news_soup.select_one('div.list_text')
+
+        # Use the parent element to find the first `a` tag and save it as `news_title`
+
+        news_title = slide_elem.find('div', class_='content_title').get_text()
+
+        # Use the parent element to find the paragraph text
+
+        news_p = slide_elem.find('div', class_='article_teaser_body').get_text()
+
+    
+    except AttributeError:
+        
+        return None, None
+
+
+    return news_title, news_p
 
 ### Featured Images
 
-# Visit Url
+def featured_image(browser):
 
-url = 'https://spaceimages-mars.com'
+    # Visit Url
 
-browser.visit(url)
+    url = 'https://spaceimages-mars.com'
 
-# Find and click the full image button
+    browser.visit(url)
 
-full_image_elem = browser.find_by_tag('button')[1]
+    # Find and click the full image button
 
-full_image_elem.click()
+    full_image_elem = browser.find_by_tag('button')[1]
 
-# Parse the resulting html with soup
+    full_image_elem.click()
 
-html = browser.html
+    # Parse the resulting html with soup
 
-img_soup = soup(html, 'html.parser')
+    html = browser.html
 
-# Find the relative image url
+    img_soup = soup(html, 'html.parser')
 
-img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
+    #Add try/except for error handling
 
-# Use the base URL to create an absolute URL
+    try:
 
-img_url = f'https://spaceimages-mars.com/{img_url_rel}'
+        # Find the relative image url
+
+        img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
+
+    except AttributeError:
+
+        return None
+
+
+     # Use the base URL to create an absolute URL
+
+    img_url = f'https://spaceimages-mars.com/{img_url_rel}'
+
+
+    return img_url
 
 ### Mars Facts
 
-# Parse facts table with Pandas
+def mars_facts():
 
-df = pd.read_html('https://galaxyfacts-mars.com')[0]
+    try:
+    # Parse facts table with Pandas
 
-df.columns = ['description', 'Mars', 'Earth']
+        df = pd.read_html('https://galaxyfacts-mars.com')[0]
 
-df.set_index('description', inplace = True)
+    except BaseException:
 
-# Turn table back into html
+        return None
+        
 
-df.to_html()
+    df.columns = ['description', 'Mars', 'Earth']
+
+    df.set_index('description', inplace = True)
+
+    # Turn table back into html, add bootstrap
+
+    return df.to_html()
 
 #Quit session
 
